@@ -6,6 +6,7 @@
 <title>My Budget</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 <style>
   :root {
     --cream: #fdf6ec;
@@ -327,6 +328,16 @@
 
   .delete-btn:hover { color: var(--red); }
 
+  /* ─── MATERIAL SYMBOLS ─── */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  .section-title .material-symbols-outlined { font-size: 1.3rem; }
+  .summary-card .label .material-symbols-outlined { font-size: 1.1rem; }
+  header h1 .material-symbols-outlined { font-size: 1.8rem; }
+  .delete-btn .material-symbols-outlined { font-size: 1.1rem; }
+
   .total-row {
     display: flex;
     justify-content: space-between;
@@ -503,7 +514,8 @@
 
   .income-event-row input:focus { border-bottom-color: var(--teal); }
 
-  .income-event-row .field-label {
+  .income-event-row .field-label,
+  .other-expense-row .field-label {
     font-size: 0.72rem;
     color: var(--text-muted);
     font-weight: 700;
@@ -516,7 +528,7 @@
   /* ─── OTHER EXPENSES ─── */
   .other-expense-row {
     display: grid;
-    grid-template-columns: 1fr auto auto auto;
+    grid-template-columns: 1fr auto 1fr auto;
     gap: 0.8rem;
     align-items: center;
     padding: 0.6rem 1.6rem;
@@ -540,6 +552,28 @@
   }
 
   .other-expense-row input:focus { border-bottom-color: var(--orange); }
+
+  /* Hide number/month spinners in expense and income rows */
+  .expense-row input[type=number],
+  .income-event-row input[type=number],
+  .income-event-row input[type=month],
+  .other-expense-row input[type=number],
+  .other-expense-row input[type=month] {
+    -moz-appearance: textfield;
+  }
+  .expense-row input[type=number]::-webkit-outer-spin-button,
+  .expense-row input[type=number]::-webkit-inner-spin-button,
+  .income-event-row input[type=number]::-webkit-outer-spin-button,
+  .income-event-row input[type=number]::-webkit-inner-spin-button,
+  .income-event-row input[type=month]::-webkit-inner-spin-button,
+  .income-event-row input[type=month]::-webkit-calendar-picker-indicator,
+  .other-expense-row input[type=number]::-webkit-outer-spin-button,
+  .other-expense-row input[type=number]::-webkit-inner-spin-button,
+  .other-expense-row input[type=month]::-webkit-inner-spin-button,
+  .other-expense-row input[type=month]::-webkit-calendar-picker-indicator {
+    -webkit-appearance: none;
+    display: none;
+  }
 
   /* ─── RESPONSIVE ─── */
   @media (max-width: 680px) {
@@ -580,7 +614,7 @@
 <!-- MAIN APP -->
 <div id="app">
   <header>
-    <h1>✨ My Budget</h1>
+    <h1><span class="material-symbols-outlined">account_balance</span> My Budget</h1>
     <div class="header-right">
       <span class="budget-name-badge" id="badge-name"></span>
       <div class="save-status">
@@ -598,17 +632,17 @@
       <!-- Summary -->
       <div class="summary-row">
         <div class="summary-card balance">
-          <div class="label">💳 Current Balance</div>
+          <div class="label"><span class="material-symbols-outlined">account_balance_wallet</span> Current Balance</div>
           <div class="amount" id="summary-balance">—</div>
           <div class="sub">Starting point</div>
         </div>
         <div class="summary-card expenses">
-          <div class="label">📉 Monthly Expenses</div>
+          <div class="label"><span class="material-symbols-outlined">trending_down</span> Monthly Expenses</div>
           <div class="amount" id="summary-expenses">—</div>
           <div class="sub">Regular bills & costs</div>
         </div>
         <div class="summary-card projection">
-          <div class="label">📈 12 Month Projection</div>
+          <div class="label"><span class="material-symbols-outlined">show_chart</span> 12 Month Projection</div>
           <div class="amount" id="summary-projection">—</div>
           <div class="sub">Projected balance in 12 months</div>
         </div>
@@ -617,7 +651,7 @@
       <!-- Current Balance -->
       <div class="section">
         <div class="section-header">
-          <div class="section-title">💳 Current Balance</div>
+          <div class="section-title"><span class="material-symbols-outlined">account_balance_wallet</span> Current Balance</div>
         </div>
         <div class="balance-field-row">
           <label>Balance:</label>
@@ -628,7 +662,7 @@
       <!-- Monthly Expenses -->
       <div class="section">
         <div class="section-header">
-          <div class="section-title">📋 Monthly Expenses</div>
+          <div class="section-title"><span class="material-symbols-outlined">receipt_long</span> Monthly Expenses</div>
           <button class="add-btn" onclick="addExpense()">+ Add item</button>
         </div>
         <div class="expense-list" id="expense-list"></div>
@@ -641,7 +675,7 @@
       <!-- Income Events -->
       <div class="section">
         <div class="section-header teal">
-          <div class="section-title">💵 Occasional Income</div>
+          <div class="section-title"><span class="material-symbols-outlined">payments</span> Occasional Income</div>
           <button class="add-btn teal" onclick="addIncome()">+ Add income</button>
         </div>
         <div class="expense-list" id="income-list"></div>
@@ -654,7 +688,7 @@
       <!-- Other / One-time Expenses -->
       <div class="section">
         <div class="section-header">
-          <div class="section-title">🎯 One-Time Expenses</div>
+          <div class="section-title"><span class="material-symbols-outlined">event</span> One-Time Expenses</div>
           <button class="add-btn" onclick="addOther()">+ Add expense</button>
         </div>
         <div class="expense-list" id="other-list"></div>
@@ -667,7 +701,7 @@
       <!-- Projection -->
       <div class="section">
         <div class="section-header teal">
-          <div class="section-title">📅 Balance Projection</div>
+          <div class="section-title"><span class="material-symbols-outlined">timeline</span> Balance Projection</div>
           <div class="proj-month-count">
             <span>Months:</span>
             <input type="range" min="3" max="24" value="12" id="month-slider" oninput="updateProjection()" />
@@ -688,7 +722,7 @@
       <!-- Notes -->
       <div class="section">
         <div class="section-header">
-          <div class="section-title">📝 Notes</div>
+          <div class="section-title"><span class="material-symbols-outlined">edit_note</span> Notes</div>
         </div>
         <div class="notes-area">
           <textarea id="notes-input" placeholder="Jot down any reminders or goals here..." oninput="debounceSave()"></textarea>
@@ -736,6 +770,30 @@ let data = defaultData();
 
 function uid() {
   return Math.random().toString(36).slice(2, 9);
+}
+
+function currentMonthStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// Returns month index (0 = this month) from event_date, falling back to legacy month_offset
+function eventMonthOffset(e) {
+  if (e.event_date) {
+    const now = new Date();
+    const [y, m] = e.event_date.split('-').map(Number);
+    return (y - now.getFullYear()) * 12 + (m - 1 - now.getMonth());
+  }
+  return e.month_offset ?? 0;
+}
+
+// Returns a YYYY-MM string for an event (converts legacy month_offset if needed)
+function eventDateStr(e) {
+  if (e.event_date) return e.event_date;
+  const now = new Date();
+  const offset = e.month_offset ?? 0;
+  const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
@@ -835,7 +893,7 @@ function renderExpenses() {
              oninput="updateExpense('${e.id}','name',this.value)" />
       <input type="number" class="amount-input" value="${e.amount}" step="0.01" placeholder="0.00"
              oninput="updateExpense('${e.id}','amount',parseFloat(this.value)||0)" />
-      <button class="delete-btn" onclick="deleteExpense('${e.id}')" title="Remove">✕</button>
+      <button class="delete-btn" onclick="deleteExpense('${e.id}')" title="Remove"><span class="material-symbols-outlined">close</span></button>
     `;
     list.appendChild(row);
   });
@@ -860,12 +918,11 @@ function renderIncome() {
                oninput="updateIncome('${e.id}','amount',parseFloat(this.value)||0)" />
       </div>
       <div class="field-group">
-        <span class="field-label">Month offset</span>
-        <input type="number" value="${e.month_offset ?? 0}" min="0" step="1" placeholder="0"
-               title="Which month from now (0 = this month)"
-               oninput="updateIncome('${e.id}','month_offset',parseInt(this.value)||0)" />
+        <span class="field-label">Date</span>
+        <input type="month" value="${eventDateStr(e)}"
+               oninput="updateIncome('${e.id}','event_date',this.value)" />
       </div>
-      <button class="delete-btn" onclick="deleteIncome('${e.id}')" title="Remove">✕</button>
+      <button class="delete-btn" onclick="deleteIncome('${e.id}')" title="Remove"><span class="material-symbols-outlined">close</span></button>
     `;
     list.appendChild(row);
   });
@@ -879,15 +936,22 @@ function renderOther() {
     const row = document.createElement('div');
     row.className = 'other-expense-row';
     row.innerHTML = `
-      <input type="text" value="${esc(e.name)}" placeholder="Expense name"
-             oninput="updateOther('${e.id}','name',this.value)" />
-      <input type="number" class="amount-input" value="${e.amount}" step="0.01" placeholder="0.00"
-             oninput="updateOther('${e.id}','amount',parseFloat(this.value)||0)" />
-      <input type="number" value="${e.month_offset ?? 0}" min="0" step="1" placeholder="Month"
-             title="Which month offset (0 = this month)"
-             style="width:60px"
-             oninput="updateOther('${e.id}','month_offset',parseInt(this.value)||0)" />
-      <button class="delete-btn" onclick="deleteOther('${e.id}')" title="Remove">✕</button>
+      <div class="field-group">
+        <span class="field-label">Description</span>
+        <input type="text" value="${esc(e.name)}" placeholder="e.g. Car repair"
+               oninput="updateOther('${e.id}','name',this.value)" />
+      </div>
+      <div class="field-group">
+        <span class="field-label">Amount $</span>
+        <input type="number" class="amount-input" value="${e.amount}" step="0.01"
+               oninput="updateOther('${e.id}','amount',parseFloat(this.value)||0)" />
+      </div>
+      <div class="field-group">
+        <span class="field-label">Date</span>
+        <input type="month" value="${eventDateStr(e)}"
+               oninput="updateOther('${e.id}','event_date',this.value)" />
+      </div>
+      <button class="delete-btn" onclick="deleteOther('${e.id}')" title="Remove"><span class="material-symbols-outlined">close</span></button>
     `;
     list.appendChild(row);
   });
@@ -914,10 +978,10 @@ function updateSummary() {
   for (let i = 0; i < 12; i++) {
     projected -= expTotal;
     data.income_events.forEach(e => {
-      if ((e.month_offset ?? 0) === i) projected += (e.amount || 0);
+      if (eventMonthOffset(e) === i) projected += (e.amount || 0);
     });
     data.other_expenses.forEach(e => {
-      if ((e.month_offset ?? 0) === i) projected -= (e.amount || 0);
+      if (eventMonthOffset(e) === i) projected -= (e.amount || 0);
     });
   }
   projected = Math.round(projected * 100) / 100;
@@ -949,11 +1013,11 @@ function updateProjection() {
     bal -= monthlyExp;
     // income events
     data.income_events.forEach(e => {
-      if ((e.month_offset ?? 0) === i) bal += (e.amount || 0);
+      if (eventMonthOffset(e) === i) bal += (e.amount || 0);
     });
     // one-time expenses
     data.other_expenses.forEach(e => {
-      if ((e.month_offset ?? 0) === i) bal -= (e.amount || 0);
+      if (eventMonthOffset(e) === i) bal -= (e.amount || 0);
     });
     balances.push(Math.round(bal * 100) / 100);
   }
@@ -1065,7 +1129,7 @@ function updateExpense(id, field, val) {
 }
 
 function addIncome() {
-  data.income_events.push({ id: uid(), name: '', amount: 0, month_offset: 0 });
+  data.income_events.push({ id: uid(), name: '', amount: 0, event_date: currentMonthStr() });
   renderIncome();
   updateProjection();
   debounceSave();
@@ -1087,7 +1151,7 @@ function updateIncome(id, field, val) {
 }
 
 function addOther() {
-  data.other_expenses.push({ id: uid(), name: '', amount: 0, month_offset: 0 });
+  data.other_expenses.push({ id: uid(), name: '', amount: 0, event_date: currentMonthStr() });
   renderOther();
   updateProjection();
   debounceSave();
