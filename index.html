@@ -595,6 +595,36 @@
   .loading-msg { text-align: center; color: var(--text-muted); padding: 2rem; }
 
   .month-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
+
+  .month-year-picker { display: flex; gap: 0.3rem; align-items: center; }
+
+  .amount-prefix-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .amount-prefix-wrap .currency-sym {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+  .date-select {
+    border: none;
+    border-bottom: 1.5px solid transparent;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    padding: 0.15rem 0;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .income-event-row .date-select:focus { border-bottom-color: var(--teal); }
+  .other-expense-row .date-select:focus { border-bottom-color: var(--orange); }
 </style>
 </head>
 <body>
@@ -913,14 +943,16 @@ function renderIncome() {
                oninput="updateIncome('${e.id}','name',this.value)" />
       </div>
       <div class="field-group">
-        <span class="field-label">Amount $</span>
-        <input type="number" class="amount-input income" value="${e.amount}" step="0.01"
-               oninput="updateIncome('${e.id}','amount',parseFloat(this.value)||0)" />
+        <span class="field-label">Amount</span>
+        <div class="amount-prefix-wrap">
+          <span class="currency-sym">$</span>
+          <input type="number" class="amount-input income" value="${e.amount}" step="0.01"
+                 oninput="updateIncome('${e.id}','amount',parseFloat(this.value)||0)" />
+        </div>
       </div>
       <div class="field-group">
         <span class="field-label">Date</span>
-        <input type="month" value="${eventDateStr(e)}"
-               oninput="updateIncome('${e.id}','event_date',this.value)" />
+        ${monthYearPickerHTML(e.id, eventDateStr(e), 'updateIncome')}
       </div>
       <button class="delete-btn" onclick="deleteIncome('${e.id}')" title="Remove"><span class="material-symbols-outlined">close</span></button>
     `;
@@ -942,14 +974,16 @@ function renderOther() {
                oninput="updateOther('${e.id}','name',this.value)" />
       </div>
       <div class="field-group">
-        <span class="field-label">Amount $</span>
-        <input type="number" class="amount-input" value="${e.amount}" step="0.01"
-               oninput="updateOther('${e.id}','amount',parseFloat(this.value)||0)" />
+        <span class="field-label">Amount</span>
+        <div class="amount-prefix-wrap">
+          <span class="currency-sym">$</span>
+          <input type="number" class="amount-input" value="${e.amount}" step="0.01"
+                 oninput="updateOther('${e.id}','amount',parseFloat(this.value)||0)" />
+        </div>
       </div>
       <div class="field-group">
         <span class="field-label">Date</span>
-        <input type="month" value="${eventDateStr(e)}"
-               oninput="updateOther('${e.id}','event_date',this.value)" />
+        ${monthYearPickerHTML(e.id, eventDateStr(e), 'updateOther')}
       </div>
       <button class="delete-btn" onclick="deleteOther('${e.id}')" title="Remove"><span class="material-symbols-outlined">close</span></button>
     `;
@@ -1037,7 +1071,7 @@ function updateProjection() {
   const incRow = '<tr>' +
     '<td>Income events</td>' +
     labels.map((_, i) => {
-      const amt = data.income_events.filter(e => (e.month_offset ?? 0) === i).reduce((s,e)=>s+(e.amount||0),0);
+      const amt = data.income_events.filter(e => eventMonthOffset(e) === i).reduce((s,e)=>s+(e.amount||0),0);
       return `<td style="color:${amt>0?'var(--green)':'var(--text-muted)'}">${amt > 0 ? fmt(amt) : '—'}</td>`;
     }).join('') +
     '</tr>';
@@ -1046,7 +1080,7 @@ function updateProjection() {
   const othRow = '<tr>' +
     '<td>One-time exp.</td>' +
     labels.map((_, i) => {
-      const amt = data.other_expenses.filter(e => (e.month_offset ?? 0) === i).reduce((s,e)=>s+(e.amount||0),0);
+      const amt = data.other_expenses.filter(e => eventMonthOffset(e) === i).reduce((s,e)=>s+(e.amount||0),0);
       return `<td style="color:${amt>0?'var(--red)':'var(--text-muted)'}">${amt > 0 ? '-'+fmt(amt) : '—'}</td>`;
     }).join('') +
     '</tr>';
@@ -1100,6 +1134,41 @@ function renderChart(labels, balances) {
       }
     }
   });
+}
+
+// ─── DATE PICKER HELPERS ──────────────────────────────────────────────────────
+function monthYearPickerHTML(evtId, dateStr, updateFn) {
+  const parts = (dateStr || currentMonthStr()).split('-');
+  const curM = parts[1] || '01';
+  const curY = parseInt(parts[0]) || new Date().getFullYear();
+  const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const baseYear = new Date().getFullYear();
+  const minYear = Math.min(baseYear, curY);
+  const maxYear = Math.max(baseYear + 10, curY);
+  let monthOpts = '';
+  MONTH_ABBR.forEach((name, idx) => {
+    const val = String(idx + 1).padStart(2, '0');
+    monthOpts += `<option value="${val}"${val === curM ? ' selected' : ''}>${name}</option>`;
+  });
+  let yearOpts = '';
+  for (let yr = minYear; yr <= maxYear; yr++) {
+    yearOpts += `<option value="${yr}"${yr === curY ? ' selected' : ''}>${yr}</option>`;
+  }
+  return `<div class="month-year-picker" id="picker-${evtId}"><select class="date-select month-sel" onchange="${updateFn}FromPicker('${evtId}')">${monthOpts}</select><select class="date-select year-sel" onchange="${updateFn}FromPicker('${evtId}')">${yearOpts}</select></div>`;
+}
+
+function updateIncomeFromPicker(id) {
+  const el = document.getElementById('picker-' + id);
+  const m = el.querySelector('.month-sel').value;
+  const y = el.querySelector('.year-sel').value;
+  updateIncome(id, 'event_date', y + '-' + m);
+}
+
+function updateOtherFromPicker(id) {
+  const el = document.getElementById('picker-' + id);
+  const m = el.querySelector('.month-sel').value;
+  const y = el.querySelector('.year-sel').value;
+  updateOther(id, 'event_date', y + '-' + m);
 }
 
 // ─── MUTATIONS ────────────────────────────────────────────────────────────────
